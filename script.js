@@ -75,13 +75,13 @@ function gameLoop() {
 
         // Bounce off walls
         if (parseFloat(ball.style.left) <= 0 || parseFloat(ball.style.left) >= window.innerWidth - ballSize) {
-            ball.velocityX *= -1;
+            ball.velocityX *= -1; // Reverse horizontal direction
             playSound(bounceSound);
         }
 
         // Bounce off basket
         if (parseFloat(ball.style.top) >= window.innerHeight - 70 && Math.abs(parseFloat(ball.style.left) - basketX) < 100) {
-            ball.velocityY *= -1;
+            ball.velocityY = -5; // Reverse to upward direction
             ball.style.top = `${window.innerHeight - 70}px`;
             score++;
             scoreboard.textContent = score;
@@ -90,7 +90,7 @@ function gameLoop() {
 
         // Bounce off ground
         if (parseFloat(ball.style.top) >= window.innerHeight - ballSize) {
-            ball.velocityY *= -1;
+            ball.velocityY = -5; // Reverse to upward direction
             ball.style.top = `${window.innerHeight - ballSize}px`;
 
             // Increment ground hits
@@ -103,6 +103,9 @@ function gameLoop() {
                 return;
             }
         }
+
+        // Simulate gravity
+        ball.velocityY += 0.2; // Accelerates the ball downward
     });
 
     requestAnimationFrame(gameLoop);
@@ -131,3 +134,4 @@ function playSound(sound) {
 
 // Start the game on load
 startGame();
+
