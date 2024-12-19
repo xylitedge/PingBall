@@ -7,14 +7,14 @@ const gameContainer = document.getElementById('game-container');
 
 // Configurations
 let basketX = window.innerWidth / 2 - 50;
-let groundHitCounts = [0, 0]; // Track ground hits for each ball
+let groundHitCounts = [0, 0];
 let maxGroundHits = 5;
 let score = 0;
 let gameOver = false;
 
 // Ball properties
 let balls = [];
-let numBalls = 2; // Fixed to 2 balls
+let numBalls = 2;
 let ballSize = 30;
 
 function createBall() {
@@ -30,23 +30,26 @@ function createBall() {
     balls.push(ball);
 }
 
-// Sound effects
-const bounceSound = new Audio('https://www.soundjay.com/button/beep-07.wav');
-const groundHitSound = new Audio('https://www.soundjay.com/button/beep-10.wav');
-const gameOverSound = new Audio('https://www.soundjay.com/button/beep-09.wav');
-
-// Move basket with mouse
+// Add touch support for basket
+function handleTouch(event) {
+    if (!gameOver) {
+        const touchX = event.touches[0].clientX;
+        basketX = Math.max(0, Math.min(touchX - 50, window.innerWidth - 100));
+        basket.style.left = `${basketX}px`;
+    }
+}
 document.addEventListener('mousemove', (event) => {
     if (!gameOver) {
         basketX = Math.max(0, Math.min(event.clientX - 50, window.innerWidth - 100));
         basket.style.left = `${basketX}px`;
     }
 });
+document.addEventListener('touchmove', handleTouch);
 
 // Start the game
 function startGame() {
     gameOver = false;
-    groundHitCounts = [0, 0]; // Reset ground hits
+    groundHitCounts = [0, 0];
     score = 0;
     scoreboard.textContent = score;
     gameOverDiv.classList.add('hidden');
@@ -69,33 +72,28 @@ function gameLoop() {
     if (gameOver) return;
 
     balls.forEach((ball, index) => {
-        // Move ball
         ball.style.left = `${parseFloat(ball.style.left) + ball.velocityX}px`;
         ball.style.top = `${parseFloat(ball.style.top) + ball.velocityY}px`;
 
         // Bounce off walls
         if (parseFloat(ball.style.left) <= 0 || parseFloat(ball.style.left) >= window.innerWidth - ballSize) {
-            ball.velocityX *= -1; // Reverse horizontal direction
-            playSound(bounceSound);
+            ball.velocityX *= -1;
         }
 
         // Bounce off basket
         if (parseFloat(ball.style.top) >= window.innerHeight - 70 && Math.abs(parseFloat(ball.style.left) - basketX) < 100) {
-            ball.velocityY = -5; // Reverse to upward direction
-            ball.style.top = `${window.innerHeight - 70}px`;
+            ball.velocityY = -7;
+            ball.style.transform = 'scale(1.2)'; // Simulate squash
+            setTimeout(() => ball.style.transform = 'scale(1)', 100);
             score++;
             scoreboard.textContent = score;
-            playSound(bounceSound);
         }
 
         // Bounce off ground
         if (parseFloat(ball.style.top) >= window.innerHeight - ballSize) {
-            ball.velocityY = -5; // Reverse to upward direction
+            ball.velocityY = -5;
             ball.style.top = `${window.innerHeight - ballSize}px`;
-
-            // Increment ground hits
             groundHitCounts[index]++;
-            playSound(groundHitSound);
             updateGroundHitDisplay();
 
             if (groundHitCounts[index] > maxGroundHits) {
@@ -105,7 +103,7 @@ function gameLoop() {
         }
 
         // Simulate gravity
-        ball.velocityY += 0.2; // Accelerates the ball downward
+        ball.velocityY += 0.2;
     });
 
     requestAnimationFrame(gameLoop);
@@ -119,19 +117,13 @@ function updateGroundHitDisplay() {
 // End the game
 function endGame() {
     gameOver = true;
-    playSound(gameOverSound);
     gameOverDiv.classList.remove('hidden');
 }
 
 // Restart game
 restartButton.addEventListener('click', startGame);
 
-// Play sound effect
-function playSound(sound) {
-    sound.currentTime = 0;
-    sound.play();
-}
-
 // Start the game on load
 startGame();
+
 
